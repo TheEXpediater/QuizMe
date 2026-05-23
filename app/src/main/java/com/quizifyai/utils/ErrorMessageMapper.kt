@@ -12,6 +12,14 @@ import java.net.UnknownHostException
 object ErrorMessageMapper {
     fun toMessage(error: Throwable): String {
         return when (error) {
+            is QuizifyException.ProcessingFailed -> {
+                val message = error.cause?.message ?: "Local processing failed."
+                "PDF processing failed: $message"
+            }
+            is QuizifyException.GeminiFailed -> {
+                val cause = error.cause?.message ?: "Unknown AI error"
+                "Quiz generation failed: $cause"
+            }
             is QuizifyException -> error.message.orEmpty()
             is FirebaseAuthWeakPasswordException -> "Use at least 6 characters for your password."
             is FirebaseAuthUserCollisionException -> "An account already exists with this email."

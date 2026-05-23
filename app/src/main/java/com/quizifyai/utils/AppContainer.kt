@@ -6,17 +6,14 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import com.quizifyai.BuildConfig
 import com.quizifyai.data.remote.GeminiClient
 import com.quizifyai.data.repository.AuthRepositoryImpl
 import com.quizifyai.data.repository.GeminiRepositoryImpl
 import com.quizifyai.data.repository.QuizRepositoryImpl
-import com.quizifyai.data.repository.StorageRepositoryImpl
 import com.quizifyai.domain.repository.AuthRepository
 import com.quizifyai.domain.repository.GeminiRepository
 import com.quizifyai.domain.repository.QuizRepository
-import com.quizifyai.domain.repository.StorageRepository
 import com.quizifyai.domain.usecase.GenerateQuizFromPdfUseCase
 import com.quizifyai.domain.usecase.GetQuizUseCase
 import com.quizifyai.domain.usecase.LoginUseCase
@@ -39,7 +36,8 @@ class AppContainer(context: Context) {
 
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
-    private val storage: FirebaseStorage by lazy { FirebaseStorage.getInstance() }
+    
+    private val pdfTextExtractor by lazy { SimplePdfTextExtractor(appContext) }
 
     private val authRepository: AuthRepository by lazy {
         AuthRepositoryImpl(auth, firestore)
@@ -47,14 +45,6 @@ class AppContainer(context: Context) {
 
     private val quizRepository: QuizRepository by lazy {
         QuizRepositoryImpl(firestore)
-    }
-
-    private val storageRepository: StorageRepository by lazy {
-        StorageRepositoryImpl(
-            context = appContext,
-            storage = storage,
-            pdfTextExtractor = SimplePdfTextExtractor(appContext),
-        )
     }
 
     private val geminiRepository: GeminiRepository by lazy {
@@ -79,7 +69,7 @@ class AppContainer(context: Context) {
             observeQuizzesUseCase = ObserveQuizzesUseCase(authRepository, quizRepository),
             generateQuizFromPdfUseCase = GenerateQuizFromPdfUseCase(
                 authRepository = authRepository,
-                storageRepository = storageRepository,
+                pdfTextExtractor = pdfTextExtractor,
                 geminiRepository = geminiRepository,
                 quizRepository = quizRepository,
             ),

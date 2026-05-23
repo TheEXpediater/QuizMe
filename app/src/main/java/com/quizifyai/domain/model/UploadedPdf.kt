@@ -1,6 +1,1 @@
-package com.quizifyai.domain.model
-
-data class UploadedPdf(
-    val fileName: String,
-    val storagePath: String,
-)
+// File removed as Firebase Storage is no longer used.

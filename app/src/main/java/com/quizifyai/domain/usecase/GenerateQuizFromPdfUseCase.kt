@@ -5,29 +5,46 @@ import com.quizifyai.domain.model.QuizifyException
 import com.quizifyai.domain.repository.AuthRepository
 import com.quizifyai.domain.repository.GeminiRepository
 import com.quizifyai.domain.repository.QuizRepository
-import com.quizifyai.domain.repository.StorageRepository
+import com.quizifyai.utils.SimplePdfTextExtractor
 import kotlinx.coroutines.CancellationException
 
 class GenerateQuizFromPdfUseCase(
     private val authRepository: AuthRepository,
-    private val storageRepository: StorageRepository,
+    private val pdfTextExtractor: SimplePdfTextExtractor,
     private val geminiRepository: GeminiRepository,
     private val quizRepository: QuizRepository,
 ) {
     suspend operator fun invoke(uri: Uri) = try {
         val user = authRepository.currentUser ?: throw QuizifyException.NotAuthenticated()
-        val extractedPdf = storageRepository.readPdf(uri)
-        val uploadedPdf = storageRepository.uploadPdf(
-            userId = user.id,
-            uri = uri,
-            fileName = extractedPdf.fileName,
-            generateOnServer = false,
+        
+        // Extract text locally (No Storage upload)
+        val text = try {
+            pdfTextExtractor.extract(uri)
+        } catch (e: QuizifyException) {
+            throw e
+        } catch (e: Exception) {
+            throw QuizifyException.ProcessingFailed(e)
+        }
+        
+        val fileName = pdfTextExtractor.resolveFileName(uri)
+
+        // Generate quiz via Gemini
+        val generatedQuiz = try {
+            geminiRepository.generateQuiz(
+                content = text,
+                pdfName = fileName,
+            )
+        } catch (e: QuizifyException) {
+            throw e
+        } catch (e: Exception) {
+            throw QuizifyException.GeminiFailed(e)
+        }
+
+        // Save to Firestore (only text and quiz data)
+        quizRepository.saveQuiz(
+            user.id,
+            generatedQuiz.copy(pdfName = fileName)
         )
-        val generatedQuiz = geminiRepository.generateQuiz(
-            content = extractedPdf.text,
-            pdfName = uploadedPdf.fileName,
-        )
-        quizRepository.saveQuiz(user.id, generatedQuiz.copy(pdfName = uploadedPdf.fileName))
     } catch (error: CancellationException) {
         throw error
     } catch (error: QuizifyException) {

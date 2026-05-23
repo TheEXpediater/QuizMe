@@ -34,11 +34,12 @@ class HomeViewModel(
     }
 
     fun onPdfSelected(uri: Uri) {
+        android.util.Log.d("HomeViewModel", "onPdfSelected: $uri")
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
                     isGenerating = true,
-                    message = "Uploading PDF and generating quiz...",
+                    message = "Processing PDF locally and generating quiz...",
                     errorMessage = null,
                 )
             }

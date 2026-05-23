@@ -11,6 +11,7 @@ data class QuizDto(
     val questions: List<QuestionDto> = emptyList(),
     val createdAt: Long = 0L,
     val pdfName: String = "",
+    val extractedText: String? = null,
 )
 
 fun QuizDto.toDomain() = Quiz(

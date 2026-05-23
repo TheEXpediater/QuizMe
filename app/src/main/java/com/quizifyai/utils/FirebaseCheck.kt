@@ -5,7 +5,6 @@ import android.util.Log
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 
 object FirebaseCheck {
     private const val TAG = "FirebaseCheck"
@@ -20,12 +19,10 @@ object FirebaseCheck {
 
             val auth = FirebaseAuth.getInstance(app)
             val firestore = FirebaseFirestore.getInstance(app)
-            val storage = FirebaseStorage.getInstance(app)
 
             Log.d(TAG, "Firebase initialized successfully")
             Log.d(TAG, "Auth instance ready: ${auth.currentUser != null}")
             Log.d(TAG, "Firestore instance ready: ${firestore.app.name}")
-            Log.d(TAG, "Storage instance ready: ${storage.app.name}")
 
             true
         } catch (e: Exception) {
@@ -41,17 +38,6 @@ object FirebaseCheck {
             true
         } catch (e: Exception) {
             Log.e(TAG, "Firestore readiness check failed", e)
-            false
-        }
-    }
-
-    fun testStorageReadiness(): Boolean {
-        return try {
-            val storage = FirebaseStorage.getInstance()
-            Log.d(TAG, "Storage ready: ${storage.app.name}")
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Storage readiness check failed", e)
             false
         }
     }
