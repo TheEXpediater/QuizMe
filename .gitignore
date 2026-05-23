@@ -1,0 +1,11 @@
+.gradle/
+.idea/
+.kotlin/
+build/
+local.properties
+app/build/
+app/google-services.json
+functions/node_modules/
+functions/lib/
+functions/.runtimeconfig.json
+*.iml
